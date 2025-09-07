@@ -16,4 +16,13 @@ module FollowError
       status: :conflict,
     )
   end
+
+  class NotFollowed < HandledError
+    default(
+      title: "NOT FOLLOWED",
+      detail: "User is not followed",
+      code: "FOER1003",
+      status: :not_found,
+    )
+  end
 end

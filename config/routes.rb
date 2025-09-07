@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :follows, only: %i[create]
+      resources :follows, only: %i[create destroy]
     end
   end
 end
