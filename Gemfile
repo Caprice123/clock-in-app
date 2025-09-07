@@ -11,7 +11,7 @@ gem "lograge"
 gem "httpparty"
 gem "dotenv"
 gem "aasm"
-gem "fast_jsonapi"
+gem "jsonapi-serializer"
 
 group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
