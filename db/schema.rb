@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_07_084801) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_07_103427) do
   create_table "follows", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "followed_user_id", null: false
@@ -18,6 +18,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_07_084801) do
     t.datetime "updated_at", null: false
     t.index ["followed_user_id"], name: "index_follows_on_followed_user_id"
     t.index ["user_id", "followed_user_id"], name: "index_follows_on_user_id_and_followed_user_id", unique: true
+  end
+
+  create_table "sleep_records", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.datetime "sleep_time", null: false, default: -> { "CURRENT_TIMESTAMP" }
+    t.datetime "wake_time"
+    t.integer "duration"
+    t.string "aasm_state", default: "sleeping", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "aasm_state", "duration"], name: "index_sleep_records_on_user_id_and_aasm_state_and_duration"
   end
 
   create_table "users", force: :cascade do |t|
