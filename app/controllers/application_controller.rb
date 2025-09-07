@@ -11,9 +11,11 @@ class ApplicationController < ActionController::Base
     @error = "#{error.class}: #{error}"
 
     render status: error.status, json: {
-      code: error.code,
-      title: error.title,
-      detail: error.detail,
+      error: {
+        code: error.code,
+        title: error.title,
+        detail: error.detail,
+      },
     }
   end
 
@@ -21,9 +23,11 @@ class ApplicationController < ActionController::Base
     @error = "#{error.class}: #{error}"
 
     render status: :internal_server_error, json: {
-      code: "Unhandled Error",
-      title: "GENERAL ERROR", # This needs to be string, else it will return empty object.
-      detail: error.message,
+      error: {
+        code: "Unhandled Error",
+        title: "GENERAL ERROR",
+        detail: error.message,
+      },
     }
   end
 
