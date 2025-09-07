@@ -5,7 +5,7 @@ class Api::V1::SleepRecordSerializer < BaseSerializer
     object.sleep_time.in_time_zone("Asia/Jakarta").iso8601
   end
 
-  attribute :wake_up do |object|
-    object.wake_up&.in_time_zone("Asia/Jakarta")&.iso8601
+  attribute :wake_time do |object|
+    object.wake_time&.in_time_zone("Asia/Jakarta")&.iso8601
   end
 end

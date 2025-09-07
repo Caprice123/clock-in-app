@@ -17,7 +17,7 @@ describe Api::V1::SleepRecordsController, type: :request do
 
     context "when creating sleep record successfully" do
       it "calls the service and returns success" do
-        expect(SleepRecord::CreateSleepRecordService).to receive(:call).with(user_id: user.id).and_return(sleep_record)
+        expect(SleepRecord::ClockInService).to receive(:call).with(current_user: user).and_return(sleep_record)
 
         post(url, headers: headers)
 
@@ -28,7 +28,7 @@ describe Api::V1::SleepRecordsController, type: :request do
             user_id: user.id,
             aasm_state: "sleeping",
             sleep_time: "2025-01-01T00:00:00+07:00",
-            wake_up: nil,
+            wake_time: nil,
             duration: nil,
           },
         )
@@ -37,7 +37,7 @@ describe Api::V1::SleepRecordsController, type: :request do
 
     context "when service raises SleepRecordError::AlreadySleeping" do
       before do
-        allow(SleepRecord::CreateSleepRecordService).to receive(:call)
+        allow(SleepRecord::ClockInService).to receive(:call)
           .and_raise(SleepRecordError::AlreadySleeping)
       end
 

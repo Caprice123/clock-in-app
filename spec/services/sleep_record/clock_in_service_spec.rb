@@ -1,4 +1,4 @@
-describe SleepRecord::CreateSleepRecordService do
+describe SleepRecord::ClockInService do
   let(:user) { create(:user) }
 
   subject { described_class.call(current_user: user) }

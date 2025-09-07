@@ -1,9 +1,9 @@
 class Api::V1::SleepRecordsController < Api::V1::BaseController
   def create
-    sleep_record = SleepRecord::CreateSleepRecordService.call(user_id: current_user.id)
+    sleep_record = SleepRecord::ClockInService.call(current_user: current_user)
 
     render status: :created, json: {
-      data: Admin::V1::BannerSerializer.new(sleep_record).serializable_hash[:data].pluck(:attributes),
+      data: Api::V1::SleepRecordSerializer.new(sleep_record).serializable_hash[:data][:attributes],
     }
   end
 end
