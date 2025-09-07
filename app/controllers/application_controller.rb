@@ -1,4 +1,4 @@
-class ApplicationController < ActionController::Base
+class ApplicationController < ActionController::API
   rescue_from StandardError, with: :handle_unknown_error
   rescue_from HandledError, with: :handle_defined_error
   before_action :disable_session_cookie_response
