@@ -9,7 +9,11 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :follows, only: %i[create destroy]
-      resources :sleep_records, only: %i[create]
+      resources :sleep_records, only: %i[create] do
+        member do
+          patch :wake_up
+        end
+      end
     end
   end
 end
