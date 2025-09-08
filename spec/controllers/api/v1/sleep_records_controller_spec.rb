@@ -104,4 +104,137 @@ describe Api::V1::SleepRecordsController, type: :request do
       end
     end
   end
+
+  describe "#followed_users" do
+    let(:followed_users_url) { "#{url}/followed_users" }
+    let(:followed_user1) { create(:user) }
+    let(:followed_user2) { create(:user) }
+
+    before do
+      create(:follow, user: user, followed_user: followed_user1)
+      create(:follow, user: user, followed_user: followed_user2)
+    end
+
+    context "when getting followed users sleep records successfully" do
+      let!(:sleep_record1) do
+        create(:sleep_record, user: followed_user1, aasm_state: "awake", wake_time: 6.hours.from_now, duration: 360)
+      end
+      let!(:sleep_record2) do
+        create(:sleep_record, user: followed_user2, aasm_state: "awake", wake_time: 8.hours.from_now, duration: 480)
+      end
+
+      it "returns sleep records ordered by duration" do
+        get(followed_users_url, headers: headers)
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:data]).to eq(
+          [
+            {
+              id: sleep_record2.id,
+              user_id: followed_user2.id,
+              aasm_state: "awake",
+              sleep_time: "2025-01-01T00:00:00+07:00",
+              wake_time: "2025-01-01T08:00:00+07:00",
+              duration: 480,
+            },
+            {
+              id: sleep_record1.id,
+              user_id: followed_user1.id,
+              aasm_state: "awake",
+              sleep_time: "2025-01-01T00:00:00+07:00",
+              wake_time: "2025-01-01T06:00:00+07:00",
+              duration: 360,
+            },
+          ],
+        )
+        expect(response_body[:pagination]).to eq(
+          {
+            current_page: 1,
+            per_page: 10,
+            is_last_page: true,
+          },
+        )
+      end
+    end
+
+    context "with pagination parameters" do
+      let!(:sleep_records_data) do
+        (1..15).map do |i|
+          create(:sleep_record, user: followed_user1, aasm_state: "awake", duration: i * 60)
+        end
+      end
+
+      it "respects page and per_page parameters" do
+        get(followed_users_url, params: { page: 1, per_page: 5 }, headers: headers)
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:data].size).to eq(5)
+        expect(response_body[:pagination]).to eq(
+          {
+            current_page: 1,
+            per_page: 5,
+            is_last_page: false,
+          },
+        )
+      end
+    end
+
+    context "with invalid pagination parameters" do
+      it "returns error for invalid page number" do
+        get(followed_users_url, params: { page: 0 }, headers: headers)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(response_body[:error]).to eq(
+          {
+            code: "PAGR1001",
+            title: "INVALID PAGE NUMBER",
+            detail: "Page number must be greater than 0",
+          },
+        )
+      end
+
+      it "returns error for invalid page size" do
+        get(followed_users_url, params: { per_page: 0 }, headers: headers)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(response_body[:error]).to eq(
+          {
+            code: "PAGR1002",
+            title: "INVALID PAGE SIZE",
+            detail: "Page size must be greater than 0",
+          },
+        )
+      end
+
+      it "returns error for page size exceeding limit" do
+        get(followed_users_url, params: { per_page: 101 }, headers: headers)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(response_body[:error]).to eq(
+          {
+            code: "PAGR1003",
+            title: "PAGE SIZE EXCEED LIMIT",
+            detail: "Page size exceeded the maximum allowed limit",
+          },
+        )
+      end
+    end
+
+    context "when user has no followed users" do
+      let(:lonely_user) { create(:user) }
+      let(:lonely_headers) do
+        {
+          "X-USERNAME": lonely_user.name,
+        }
+      end
+
+      it "returns empty results" do
+        get(followed_users_url, headers: lonely_headers)
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:data]).to be_empty
+        expect(response_body[:pagination][:is_last_page]).to be true
+      end
+    end
+  end
 end

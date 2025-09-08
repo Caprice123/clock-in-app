@@ -15,12 +15,8 @@ class SleepRecord < ApplicationRecord
 
       before do
         self.wake_time = Time.now.in_time_zone("Asia/Jakarta")
-        self.duration = calculate_duration
+        self.duration = (wake_time - sleep_time).to_i
       end
     end
-  end
-
-  private def calculate_duration
-    (wake_time - sleep_time) / 60
   end
 end
