@@ -3,7 +3,6 @@ class SleepRecord < ApplicationRecord
 
   belongs_to :user
 
-  validates :sleep_time, presence: true
   validates :duration, numericality: { greater_than: 0, allow_nil: true }
 
   aasm requires_lock: true do

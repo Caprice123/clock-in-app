@@ -12,6 +12,113 @@ describe Api::V1::SleepRecordsController, type: :request do
     travel_to Time.parse("2025-01-01 00:00:00+07:00")
   end
 
+  describe "#index" do
+    context "when user has sleep records" do
+      let!(:sleep_record1) do
+        create(:sleep_record, user: user, aasm_state: "awake", duration: 480, created_at: 2.hours.ago)
+      end
+      let!(:sleep_record2) do
+        create(:sleep_record, user: user, aasm_state: "sleeping", created_at: 1.hour.ago)
+      end
+
+      it "returns user's sleep records ordered by created_at descending" do
+        get(url, headers: headers)
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:data]).to eq(
+          [
+            {
+              id: sleep_record2.id,
+              user_id: user.id,
+              aasm_state: "sleeping",
+              sleep_time: "2025-01-01T00:00:00+07:00",
+              wake_time: nil,
+              duration: nil,
+            },
+            {
+              id: sleep_record1.id,
+              user_id: user.id,
+              aasm_state: "awake",
+              sleep_time: "2025-01-01T00:00:00+07:00",
+              wake_time: nil,
+              duration: 480,
+            },
+          ],
+        )
+        expect(response_body[:pagination]).to eq(
+          {
+            current_page: 1,
+            per_page: 10,
+            is_last_page: true,
+          },
+        )
+      end
+    end
+
+    context "with pagination parameters" do
+      let!(:sleep_records_data) do
+        (1..15).map do |i|
+          create(:sleep_record, user: user, aasm_state: "awake", duration: i * 60, created_at: i.hours.ago)
+        end
+      end
+
+      it "respects page and per_page parameters" do
+        get(url, params: { page: 1, per_page: 5 }, headers: headers)
+
+        expect(response).to have_http_status(:ok)
+        expect(response_body[:data].size).to eq(5)
+        expect(response_body[:pagination]).to eq(
+          {
+            current_page: 1,
+            per_page: 5,
+            is_last_page: false,
+          },
+        )
+      end
+    end
+
+    context "with invalid pagination parameters" do
+      it "returns error for invalid page number" do
+        get(url, params: { page: 0 }, headers: headers)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(response_body[:error]).to eq(
+          {
+            code: "PAGR1001",
+            title: "INVALID PAGE NUMBER",
+            detail: "Page number must be greater than 0",
+          },
+        )
+      end
+
+      it "returns error for invalid page size" do
+        get(url, params: { per_page: 0 }, headers: headers)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(response_body[:error]).to eq(
+          {
+            code: "PAGR1002",
+            title: "INVALID PAGE SIZE",
+            detail: "Page size must be greater than 0",
+          },
+        )
+      end
+
+      it "returns error for page size exceeding limit" do
+        get(url, params: { per_page: 101 }, headers: headers)
+
+        expect(response).to have_http_status(:bad_request)
+        expect(response_body[:error]).to eq(
+          {
+            code: "PAGR1003",
+            title: "PAGE SIZE EXCEED LIMIT",
+            detail: "Page size exceeded the maximum allowed limit",
+          },
+        )
+      end
+    end
+  end
+
   describe "#create" do
     let!(:sleep_record) { create(:sleep_record, user: user) }
 
