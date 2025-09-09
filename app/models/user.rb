@@ -10,4 +10,7 @@ class User < ApplicationRecord
 
   # Sleep records
   has_many :sleep_records
+
+  # Statistics
+  has_one :user_statistic, dependent: :destroy
 end
