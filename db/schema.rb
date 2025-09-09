@@ -35,6 +35,19 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_08_152143) do
     t.index ["user_id", "created_at"], name: "index_sleep_records_on_user_id_and_created_at", order: { created_at: :desc }
   end
 
+  create_table "user_statistics", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.integer "total_sleep_records", default: 0
+    t.integer "total_awake_records", default: 0
+    t.bigint "total_sleep_duration", default: 0
+    t.decimal "average_sleep_duration", precision: 8, scale: 2, default: "0.0"
+    t.datetime "last_calculated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["last_calculated_at"], name: "index_user_statistics_on_last_calculated_at"
+    t.index ["user_id"], name: "index_user_statistics_on_user_id", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
