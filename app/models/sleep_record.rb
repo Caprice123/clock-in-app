@@ -4,18 +4,23 @@ class SleepRecord < ApplicationRecord
   belongs_to :user
 
   validates :duration, numericality: { greater_than: 0, allow_nil: true }
+  after_create :refresh_statistics
 
   aasm requires_lock: true do
     state :sleeping, initial: true
     state :awake
 
-    event :wake_up do
+    event :wake_up, before_commit: :set_wake_time, after_commit: :refresh_statistics do
       transitions from: :sleeping, to: :awake
-
-      before do
-        self.wake_time = Time.now.in_time_zone("Asia/Jakarta")
-        self.duration = (wake_time - sleep_time).to_i
-      end
     end
+  end
+
+  private def set_wake_time
+    self.wake_time = Time.now.in_time_zone("Asia/Jakarta")
+    self.duration = (wake_time - sleep_time).to_i
+  end
+
+  private def refresh_statistics
+    CalculateUserStatisticsJob.perform_later(self)
   end
 end
