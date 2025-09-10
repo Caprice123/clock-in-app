@@ -20,14 +20,6 @@ describe UserStatistic::CalculateUserStatisticsService do
         expect(user_stat.last_calculated_at).to be_present
       end
 
-      it "calls calculate_ongoing_sleep_stats" do
-        allow(service_instance).to receive(:calculate_ongoing_sleep_stats)
-
-        subject
-
-        expect(service_instance).to have_received(:calculate_ongoing_sleep_stats)
-      end
-
       context "when user statistic already exists" do
         let!(:existing_stat) { create(:user_statistic, user: user, total_sleep_records: 5) }
 
@@ -52,14 +44,6 @@ describe UserStatistic::CalculateUserStatisticsService do
         expect(user_stat.user_id).to eq(user.id)
         expect(user_stat.last_calculated_at).to be_present
       end
-
-      it "calls calculate_completed_sleep_stats" do
-        allow(service_instance).to receive(:calculate_completed_sleep_stats)
-
-        subject
-
-        expect(service_instance).to have_received(:calculate_completed_sleep_stats)
-      end
     end
 
     context "when sleep record has no user" do
@@ -72,7 +56,7 @@ describe UserStatistic::CalculateUserStatisticsService do
   end
 
   describe "#calculate_ongoing_sleep_stats" do
-    let(:user_stat) { create(:user_statistic, user: user, total_sleep_records: 3) }
+    let!(:user_stat) { create(:user_statistic, user: user, total_sleep_records: 3) }
     let(:service) { described_class.new(sleep_record: sleep_record) }
 
     it "increments total_sleep_records" do

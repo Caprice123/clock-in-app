@@ -7,6 +7,7 @@ class SleepRecord::GetFollowedUsersSleepRecordsService < ApplicationService
 
   def call
     sleep_records = SleepRecord
+      .select(:id, :user_id, :aasm_state, :sleep_time, :wake_time, :duration)
       .joins(user: :follower_relationships)
       .where(follows: { user_id: @current_user.id }, aasm_state: :awake)
       .order(duration: :desc)
@@ -14,6 +15,6 @@ class SleepRecord::GetFollowedUsersSleepRecordsService < ApplicationService
       .per(@per_page)
       .without_count
 
-    [sleep_records, sleep_records.last_page?]
+    [sleep_records, sleep_records.last_page? || sleep_records.empty?]
   end
 end

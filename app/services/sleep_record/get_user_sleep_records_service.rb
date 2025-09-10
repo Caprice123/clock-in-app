@@ -7,11 +7,12 @@ class SleepRecord::GetUserSleepRecordsService < ApplicationService
 
   def call
     sleep_records = @current_user.sleep_records
+      .select(:id, :user_id, :aasm_state, :sleep_time, :wake_time, :duration, :created_at)
       .order(created_at: :desc)
       .page(@page)
       .per(@per_page)
       .without_count
 
-    [sleep_records, sleep_records.last_page?]
+    [sleep_records, sleep_records.last_page? || sleep_records.empty?]
   end
 end

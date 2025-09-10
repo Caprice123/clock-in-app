@@ -10,7 +10,10 @@ class SleepRecord < ApplicationRecord
     state :sleeping, initial: true
     state :awake
 
-    event :wake_up, before_commit: :set_wake_time, after_commit: :refresh_statistics do
+    event :wake_up, after_commit: :refresh_statistics do
+      before do
+        set_wake_time
+      end
       transitions from: :sleeping, to: :awake
     end
   end

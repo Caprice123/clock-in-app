@@ -11,13 +11,13 @@ describe SleepRecord::ClockInService do
 
       sleep_record = SleepRecord.last
       expect(sleep_record.user).to eq(user)
-      expect(sleep_record.status).to eq("sleeping")
+      expect(sleep_record.aasm_state).to eq("sleeping")
     end
   end
 
   context "when there is existing sleep record that is still pending" do
     it "raises error SleepRecordError::AlreadySleeping" do
-      create(:sleep_record, user: user, status: "sleeping")
+      create(:sleep_record, user: user, aasm_state: "sleeping")
 
       expect { subject }.to raise_error(SleepRecordError::AlreadySleeping)
     end
