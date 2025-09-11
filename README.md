@@ -37,11 +37,18 @@ All service classes use `.select()` to load only required fields, reducing memor
 #### 3. Efficient Pagination
 - Uses Kaminari gem with `.without_count` for faster pagination on large datasets
 - Custom logic to determine last page without expensive COUNT queries
-- Configurable per-page limits with sensible defaults (10 items per page)
+- Configurable cursor-based pagination with sensible defaults (10 items per page)
 
 ```ruby
 # Optimized pagination without COUNT query
-sleep_records = query.page(@page).per(@per_page).without_count
+ sleep_records = @current_user.sleep_records
+  .select(:id, :user_id, :aasm_state, :sleep_time, :wake_time, :duration, :created_at)
+
+sleep_records = sleep_records.where("id < ?", @cursor) if @cursor.present?
+sleep_records = sleep_records.order(created_at: :desc, id: :desc)
+  .page(1)
+  .per(@per_page)
+  .without_count
 [sleep_records, sleep_records.last_page? || sleep_records.empty?]
 ```
 
@@ -71,7 +78,7 @@ SleepRecord
   .select(:id, :user_id, :aasm_state, :sleep_time, :wake_time, :duration)
   .joins(user: :follower_relationships)
   .where(follows: { user_id: @current_user.id }, aasm_state: :awake)
-  .order(duration: :desc)
+  .order(duration: :desc, id: :desc)
 ```
 
 ### 📊 Data Volume Management
