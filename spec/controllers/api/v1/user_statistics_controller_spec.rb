@@ -20,7 +20,7 @@ describe Api::V1::UserStatisticsController, type: :request do
           user: user,
           total_sleep_records: 10,
           total_awake_records: 8,
-          total_sleep_duration: 3840, # 64 hours in minutes
+          total_sleep_duration: 3840,
           average_sleep_duration: 480.0,
           last_calculated_at: Time.parse("2025-01-01 11:00:00+07:00"),
         )
@@ -36,7 +36,7 @@ describe Api::V1::UserStatisticsController, type: :request do
             total_sleep_records: 10,
             total_awake_records: 8,
             total_sleep_duration: 3840,
-            average_sleep_duration: "480.0",
+            average_sleep_duration: 480.0,
             last_calculated_at: "2025-01-01T11:00:00+07:00",
           },
         )

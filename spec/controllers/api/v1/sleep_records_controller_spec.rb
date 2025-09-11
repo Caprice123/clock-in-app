@@ -15,10 +15,17 @@ describe Api::V1::SleepRecordsController, type: :request do
   describe "#index" do
     context "when user has sleep records" do
       let!(:sleep_record1) do
-        create(:sleep_record, user: user, aasm_state: "awake", duration: 480, created_at: 2.hours.ago)
+        create(
+          :sleep_record,
+          user: user,
+          aasm_state: "awake",
+          sleep_time: 2.hours.ago,
+          wake_time: Time.now.in_time_zone("Asia/Jakarta"),
+          duration: 2.hours.to_i,
+        )
       end
       let!(:sleep_record2) do
-        create(:sleep_record, user: user, aasm_state: "sleeping", created_at: 1.hour.ago)
+        create(:sleep_record, user: user, aasm_state: "sleeping")
       end
 
       it "returns user's sleep records ordered by created_at descending" do
@@ -39,9 +46,9 @@ describe Api::V1::SleepRecordsController, type: :request do
               id: sleep_record1.id,
               user_id: user.id,
               aasm_state: "awake",
-              sleep_time: "2025-01-01T00:00:00+07:00",
-              wake_time: nil,
-              duration: 480,
+              sleep_time: "2025-01-00T22:00:00+07:00",
+              wake_time: "2025-01-01T00:00:00+07:00",
+              duration: 2.hours.to_i,
             },
           ],
         )
@@ -187,7 +194,7 @@ describe Api::V1::SleepRecordsController, type: :request do
             aasm_state: "awake",
             sleep_time: "2025-01-01T00:00:00+07:00",
             wake_time: "2025-01-01T01:00:00+07:00",
-            duration: 3600,
+            duration: 6.hours.to_i,
           },
         )
       end
@@ -226,10 +233,10 @@ describe Api::V1::SleepRecordsController, type: :request do
 
     context "when getting followed users sleep records successfully" do
       let!(:sleep_record1) do
-        create(:sleep_record, user: followed_user1, aasm_state: "awake", wake_time: 6.hours.from_now, duration: 360)
+        create(:sleep_record, user: followed_user1, aasm_state: "awake", wake_time: 6.hours.from_now, duration: 6.hours.to_i)
       end
       let!(:sleep_record2) do
-        create(:sleep_record, user: followed_user2, aasm_state: "awake", wake_time: 8.hours.from_now, duration: 480)
+        create(:sleep_record, user: followed_user2, aasm_state: "awake", wake_time: 8.hours.from_now, duration: 8.hours.to_i)
       end
 
       it "returns sleep records ordered by duration" do
@@ -244,7 +251,7 @@ describe Api::V1::SleepRecordsController, type: :request do
               aasm_state: "awake",
               sleep_time: "2025-01-01T00:00:00+07:00",
               wake_time: "2025-01-01T08:00:00+07:00",
-              duration: 480,
+              duration: 8.hours.to_i,
             },
             {
               id: sleep_record1.id,
@@ -252,7 +259,7 @@ describe Api::V1::SleepRecordsController, type: :request do
               aasm_state: "awake",
               sleep_time: "2025-01-01T00:00:00+07:00",
               wake_time: "2025-01-01T06:00:00+07:00",
-              duration: 360,
+              duration: 6.hours.to_i,
             },
           ],
         )

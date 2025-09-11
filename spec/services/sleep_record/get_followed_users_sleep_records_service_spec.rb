@@ -107,8 +107,8 @@ describe SleepRecord::GetFollowedUsersSleepRecordsService do
       second_ids = second_page.map(&:id)
       expect(first_ids & second_ids).to be_empty
 
-      # Verify cursor worked - all second page IDs should be less than cursor
-      expect(second_ids.all? { |id| id < cursor }).to be true
+      # Verify cursor worked
+      expect(second_ids).to eq(10.downto(6).to_a)
     end
 
     it "returns is_last_page true when reaching end" do

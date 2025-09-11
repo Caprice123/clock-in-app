@@ -18,7 +18,7 @@ describe SleepRecord::WakeUpService do
       expect(result).to eq(sleep_record)
       expect(result.aasm_state).to eq("awake")
       expect(result.wake_time).to eq(Time.parse("2025-01-01 08:00:00+07:00"))
-      expect(result.duration).to eq(8 * 60 * 60) # 8 hours in seconds
+      expect(result.duration).to eq(8.hours.to_i)
     end
 
     it "transitions from sleeping to awake state" do
