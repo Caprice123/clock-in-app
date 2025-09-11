@@ -16,8 +16,8 @@ This application follows a service-oriented architecture with careful attention 
   - Composite unique index on `[user_id, followed_user_id]` to prevent duplicate follows
   - Index on `followed_user_id` for reverse relationship queries
 - **Sleep Records Table**:
-  - Composite index on `[user_id, aasm_state, duration]` for efficient filtering and sorting
-  - Time-based index on `[user_id, created_at]` with DESC ordering for timeline queries
+  - Composite index on `[user_id, aasm_state, duration, id]` for efficient filtering and sorting
+  - Time-based index on `[user_id, created_at, id]` with DESC ordering for timeline queries
 - **User Statistics Table**:
   - Unique index on `user_id` for one-to-one relationship enforcement
   - Index on `last_calculated_at` for batch processing and cleanup operations
