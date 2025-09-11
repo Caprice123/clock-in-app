@@ -23,8 +23,15 @@ class AppLogger
 
     def configure_logger(tag)
       logger = Logger.new(Rails.root.join("log", "#{tag}.log"))
-      logger.formatter = formatter_for_concern(tag)
-      logger.level = Rails.logger.level
+
+      unless Rails.env.test?
+        stdout_logger = Logger.new(STDOUT)
+        stdout_logger.formatter = formatter_for_concern(tag)
+        logger = ActiveSupport::BroadcastLogger.new(logger, stdout_logger)
+      end
+
+      logger.formatter = formatter_for_concern(tag) if logger.respond_to?(:formatter=)
+      logger.level = Rails.logger.level if logger.respond_to?(:level=)
       logger
     end
 
