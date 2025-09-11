@@ -65,7 +65,7 @@ describe SleepRecord::GetFollowedUsersSleepRecordsService do
     let!(:sleep_records_data) do
       # Create 15 sleep records with different durations and specific IDs
       (1..15).map do |i|
-        create(:sleep_record, user: followed_user1, aasm_state: "awake", duration: i * 60)
+        create(:sleep_record, id: i, user: followed_user1, aasm_state: "awake", duration: i * 60)
       end
     end
 
