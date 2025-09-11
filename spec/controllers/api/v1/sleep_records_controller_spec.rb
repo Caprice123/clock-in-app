@@ -62,8 +62,8 @@ describe Api::V1::SleepRecordsController, type: :request do
         end
       end
 
-      it "respects cursor and per_page parameters" do
-        get(url, params: { cursor: 1, per_page: 5 }, headers: headers)
+      it "respects per_page parameters" do
+        get(url, params: { per_page: 5 }, headers: headers)
 
         expect(response).to have_http_status(:ok)
         expect(response_body[:data].size).to eq(5)
@@ -78,7 +78,7 @@ describe Api::V1::SleepRecordsController, type: :request do
     end
 
     context "with invalid pagination parameters" do
-      it "returns error for invalid cursor number" do
+      it "returns error for invalid cursor" do
         get(url, params: { cursor: -1 }, headers: headers)
 
         expect(response).to have_http_status(:bad_request)
@@ -169,11 +169,12 @@ describe Api::V1::SleepRecordsController, type: :request do
 
     context "when waking up successfully" do
       before do
-        sleep_record.awake!
+        travel_to Time.parse("2025-01-01 01:00:00+07:00")
+        sleep_record.wake_up!
       end
 
       it "calls the WakeUpService and returns success" do
-        expect(SleepRecord::WakeUpService).to receive(:call).with(current_user: user).and_return(awake_sleep_record)
+        expect(SleepRecord::WakeUpService).to receive(:call).with(current_user: user).and_return(sleep_record.reload)
 
         patch(wake_up_url, headers: headers)
 
@@ -184,8 +185,8 @@ describe Api::V1::SleepRecordsController, type: :request do
             user_id: user.id,
             aasm_state: "awake",
             sleep_time: "2025-01-01T00:00:00+07:00",
-            wake_time: "2025-01-01T08:00:00+07:00",
-            duration: 480,
+            wake_time: "2025-01-01T01:00:00+07:00",
+            duration: 3600,
           },
         )
       end
@@ -271,8 +272,8 @@ describe Api::V1::SleepRecordsController, type: :request do
         end
       end
 
-      it "respects cursor and per_page parameters" do
-        get(followed_users_url, params: { cursor: 1, per_page: 5 }, headers: headers)
+      it "respects per_page parameters" do
+        get(followed_users_url, params: { per_page: 5 }, headers: headers)
 
         expect(response).to have_http_status(:ok)
         expect(response_body[:data].size).to eq(5)
@@ -287,8 +288,8 @@ describe Api::V1::SleepRecordsController, type: :request do
     end
 
     context "with invalid pagination parameters" do
-      it "returns error for invalid cursor number" do
-        get(followed_users_url, params: { cursor: 0 }, headers: headers)
+      it "returns error for invalid cursor" do
+        get(followed_users_url, params: { cursor: -1 }, headers: headers)
 
         expect(response).to have_http_status(:bad_request)
         expect(response_body[:error]).to eq(

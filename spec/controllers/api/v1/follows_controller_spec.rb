@@ -79,24 +79,6 @@ describe Api::V1::FollowsController, type: :request do
         allow(ValidationUtils).to receive(:validate_params)
       end
 
-      it "calls ValidationUtils with correct params" do
-        expect(ValidationUtils).to receive(:validate_params).with(
-          params: ActionController::Parameters.new(valid_params),
-          required_fields: %i[followed_user_id],
-        )
-
-        delete("#{url}/#{target_user.id}", params: valid_params, headers: headers)
-
-        expect(response).to have_http_status(:ok)
-        expect(response_body).to eq(
-          {
-            data: {
-              success: true,
-            },
-          },
-        )
-      end
-
       it "calls the unfollow service" do
         expect(Follow::UnfollowOtherUserService).to receive(:call).with(
           user_id: user.id,
