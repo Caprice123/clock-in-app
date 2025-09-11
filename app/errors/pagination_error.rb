@@ -1,9 +1,9 @@
 module PaginationError
-  class InvalidPageNumber < HandledError
+  class InvalidCursor < HandledError
     def initialize
       super(
-        title: "INVALID PAGE NUMBER",
-        detail: "Page number must be greater than 0",
+        title: "INVALID CURSOR",
+        detail: "Cursor must be greater than or equal to 0",
         code: "PAGR1001",
         status: :bad_request,
       )

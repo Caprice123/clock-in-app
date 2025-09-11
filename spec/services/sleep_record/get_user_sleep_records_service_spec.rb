@@ -2,7 +2,7 @@ describe SleepRecord::GetUserSleepRecordsService do
   let(:current_user) { create(:user) }
   let(:other_user) { create(:user) }
 
-  subject { described_class.call(current_user: current_user, page: 1, per_page: 10) }
+  subject { described_class.call(current_user: current_user, per_page: 10) }
 
   before do
     travel_to Time.parse("2025-01-01 12:00:00+07:00")
@@ -55,48 +55,60 @@ describe SleepRecord::GetUserSleepRecordsService do
     end
   end
 
-  context "with pagination" do
+  context "with cursor pagination" do
     let!(:sleep_records_data) do
-      # Create 15 sleep records with different created_at times
       (1..15).map do |i|
-        create(:sleep_record, user: current_user, aasm_state: "awake", duration: i * 60, created_at: i.hours.ago)
+        create(:sleep_record, id: i, user: current_user, aasm_state: "awake", duration: i * 60)
       end
     end
 
-    it "respects page and per_page parameters" do
+    it "respects per_page parameter without cursor" do
       sleep_records, is_last_page = described_class.call(
         current_user: current_user,
-        page: 1,
         per_page: 5,
       )
 
       expect(sleep_records.size).to eq(5)
-      # Should get the 5 most recent records (1, 2, 3, 4, 5 hours ago)
-      expected_times = (1..5).map { |i| i.hours.ago.to_i }
-      actual_times = sleep_records.map { |r| r.created_at.to_i }
-      expect(actual_times).to eq(expected_times)
+      expect(sleep_records.map(&:id)).to eq(15.downto(11).to_a)
       expect(is_last_page).to be false
     end
 
-    it "returns correct is_last_page for last page" do
-      sleep_records, is_last_page = described_class.call(
+    it "respects cursor parameter for pagination" do
+      # First get initial page
+      first_page, first_is_last = described_class.call(
         current_user: current_user,
-        page: 3,
         per_page: 5,
       )
 
-      expect(sleep_records.size).to eq(5)
-      expect(is_last_page).to be true
+      expect(first_is_last).to be false
+      cursor = first_page.last.id
+
+      # Then get next page using cursor
+      second_page, second_is_last = described_class.call(
+        current_user: current_user,
+        per_page: 5,
+        cursor: cursor,
+      )
+
+      expect(second_page.size).to eq(5)
+      expect(second_is_last).to be false
+
+      # Verify no overlap between pages
+      first_ids = first_page.map(&:id)
+      second_ids = second_page.map(&:id)
+      expect(first_ids & second_ids).to be_empty
+
+      # Verify cursor worked
+      expect(second_ids).to eq(10.downto(6).to_a)
     end
 
-    it "returns empty results for page beyond available data" do
+    it "returns is_last_page true when reaching end" do
       sleep_records, is_last_page = described_class.call(
         current_user: current_user,
-        page: 10,
-        per_page: 5,
+        per_page: 20, # More than total records (15)
       )
 
-      expect(sleep_records).to be_empty
+      expect(sleep_records.size).to eq(15)
       expect(is_last_page).to be true
     end
   end
@@ -113,10 +125,9 @@ describe SleepRecord::GetUserSleepRecordsService do
   context "with edge case pagination parameters" do
     let!(:single_record) { create(:sleep_record, user: current_user) }
 
-    it "handles page 1 with per_page 1" do
+    it "handles per_page 1" do
       sleep_records, is_last_page = described_class.call(
         current_user: current_user,
-        page: 1,
         per_page: 1,
       )
 
@@ -128,7 +139,6 @@ describe SleepRecord::GetUserSleepRecordsService do
     it "handles large per_page value" do
       sleep_records, is_last_page = described_class.call(
         current_user: current_user,
-        page: 1,
         per_page: 100,
       )
 

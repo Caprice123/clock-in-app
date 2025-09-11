@@ -3,11 +3,11 @@ class Api::V1::SleepRecordsController < Api::V1::BaseController
     ValidationUtils.validate_params(
       params: params,
       required_fields: [],
-      optional_fields: %i[page per_page],
+      optional_fields: %i[cursor per_page],
     )
 
-    page = params[:page] || 1
-    raise PaginationError::InvalidPageNumber if page.to_i <= 0
+    cursor = params[:cursor] || 1
+    raise PaginationError::InvalidCursor if cursor.to_i < 0
 
     per_page = params[:per_page] || 10
     raise PaginationError::InvalidPageSize if per_page.to_i <= 0
@@ -15,8 +15,8 @@ class Api::V1::SleepRecordsController < Api::V1::BaseController
 
     sleep_records, is_last_page = SleepRecord::GetUserSleepRecordsService.call(
       current_user: current_user,
-      page: page.to_i,
       per_page: per_page.to_i,
+      cursor: cursor.to_i,
     )
 
     render status: :ok, json: {
@@ -49,10 +49,10 @@ class Api::V1::SleepRecordsController < Api::V1::BaseController
     ValidationUtils.validate_params(
       params: params,
       required_fields: [],
-      optional_fields: %i[page per_page],
+      optional_fields: %i[cursor per_page],
     )
-    page = params[:page] || 1
-    raise PaginationError::InvalidPageNumber if page.to_i <= 0
+    cursor = params[:cursor] || 1
+    raise PaginationError::InvalidCursor if cursor.to_i < 0
 
     per_page = params[:per_page] || 10
     raise PaginationError::InvalidPageSize if per_page.to_i <= 0

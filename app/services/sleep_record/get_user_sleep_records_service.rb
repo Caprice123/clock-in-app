@@ -1,15 +1,17 @@
 class SleepRecord::GetUserSleepRecordsService < ApplicationService
-  def initialize(current_user:, page: 1, per_page: 10)
+  def initialize(current_user:, per_page: 10, cursor: nil)
     @current_user = current_user
-    @page = page.to_i
     @per_page = per_page.to_i
+    @cursor = cursor
   end
 
   def call
     sleep_records = @current_user.sleep_records
       .select(:id, :user_id, :aasm_state, :sleep_time, :wake_time, :duration, :created_at)
-      .order(created_at: :desc)
-      .page(@page)
+
+    sleep_records = sleep_records.where("id < ?", @cursor) if @cursor.present?
+    sleep_records = sleep_records.order(created_at: :desc, id: :desc)
+      .page(1)
       .per(@per_page)
       .without_count
 

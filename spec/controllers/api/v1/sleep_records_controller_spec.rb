@@ -62,8 +62,8 @@ describe Api::V1::SleepRecordsController, type: :request do
         end
       end
 
-      it "respects page and per_page parameters" do
-        get(url, params: { page: 1, per_page: 5 }, headers: headers)
+      it "respects cursor and per_page parameters" do
+        get(url, params: { cursor: 1, per_page: 5 }, headers: headers)
 
         expect(response).to have_http_status(:ok)
         expect(response_body[:data].size).to eq(5)
@@ -78,15 +78,15 @@ describe Api::V1::SleepRecordsController, type: :request do
     end
 
     context "with invalid pagination parameters" do
-      it "returns error for invalid page number" do
-        get(url, params: { page: 0 }, headers: headers)
+      it "returns error for invalid cursor number" do
+        get(url, params: { cursor: -1 }, headers: headers)
 
         expect(response).to have_http_status(:bad_request)
         expect(response_body[:error]).to eq(
           {
             code: "PAGR1001",
-            title: "INVALID PAGE NUMBER",
-            detail: "Page number must be greater than 0",
+            title: "INVALID CURSOR",
+            detail: "Cursor must be greater than or equal to 0",
           },
         )
       end
@@ -271,8 +271,8 @@ describe Api::V1::SleepRecordsController, type: :request do
         end
       end
 
-      it "respects page and per_page parameters" do
-        get(followed_users_url, params: { page: 1, per_page: 5 }, headers: headers)
+      it "respects cursor and per_page parameters" do
+        get(followed_users_url, params: { cursor: 1, per_page: 5 }, headers: headers)
 
         expect(response).to have_http_status(:ok)
         expect(response_body[:data].size).to eq(5)
@@ -287,15 +287,15 @@ describe Api::V1::SleepRecordsController, type: :request do
     end
 
     context "with invalid pagination parameters" do
-      it "returns error for invalid page number" do
-        get(followed_users_url, params: { page: 0 }, headers: headers)
+      it "returns error for invalid cursor number" do
+        get(followed_users_url, params: { cursor: 0 }, headers: headers)
 
         expect(response).to have_http_status(:bad_request)
         expect(response_body[:error]).to eq(
           {
             code: "PAGR1001",
-            title: "INVALID PAGE NUMBER",
-            detail: "Page number must be greater than 0",
+            title: "INVALID CURSOR",
+            detail: "Cursor must be greater than or equal to 0",
           },
         )
       end
