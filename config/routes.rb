@@ -14,9 +14,10 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :follows, only: %i[create destroy]
-      resources :sleep_records, only: %i[index create] do
+      resources :sleep_records, only: %i[index] do
         collection do
           get :followed_users
+          post :clock_in
         end
         member do
           patch :wake_up

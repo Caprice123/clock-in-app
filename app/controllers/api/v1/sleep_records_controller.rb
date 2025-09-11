@@ -29,7 +29,7 @@ class Api::V1::SleepRecordsController < Api::V1::BaseController
     }
   end
 
-  def create
+  def clock_in
     sleep_record = SleepRecord::ClockInService.call(current_user: current_user)
 
     render status: :created, json: {

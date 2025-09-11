@@ -119,14 +119,15 @@ describe Api::V1::SleepRecordsController, type: :request do
     end
   end
 
-  describe "#create" do
+  describe "#clock_in" do
     let!(:sleep_record) { create(:sleep_record, user: user) }
+    let(:clock_in_url) { "#{url}/clock_in" }
 
     context "when creating sleep record successfully" do
       it "calls the service and returns success" do
         expect(SleepRecord::ClockInService).to receive(:call).with(current_user: user).and_return(sleep_record)
 
-        post(url, headers: headers)
+        post(clock_in_url, headers: headers)
 
         expect(response).to have_http_status(:created)
         expect(response_body[:data]).to eq(
@@ -149,7 +150,7 @@ describe Api::V1::SleepRecordsController, type: :request do
       end
 
       it "returns already sleeping error" do
-        post(url, headers: headers)
+        post(clock_in_url, headers: headers)
 
         expect(response).to have_http_status(:conflict)
         expect(response_body[:error]).to eq(
